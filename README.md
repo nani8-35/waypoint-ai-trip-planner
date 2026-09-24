@@ -18,10 +18,40 @@ The backend requests JSON with a trip title, summary, days, and fully structured
 
 ## Architecture
 
-- `src/lib/api.js` is the browser's only API boundary; it never communicates with a model directly.
-- `server/index.js` calls Ollama only on the local machine, requests JSON, and times out slow model calls.
-- `src/lib/validateResult.js` structurally validates the model response before rendering.
-- A request-id guard prevents older, slower responses from replacing newer plans.
+The app uses a two-process architecture:
+
+```text
+React interface → Express API → local Ollama model
+       ↑               ↓
+interactive UI ← validated JSON itinerary
+```
+
+1. The browser submits only the free-form trip request to `src/lib/api.js`.
+2. `server/index.js` passes the request to Ollama at `127.0.0.1:11434`, with a strict JSON-only prompt and a 60-second timeout.
+3. The client receives the raw model text but does not render it directly.
+4. `src/lib/validateResult.js` parses and validates every required field before the React state changes.
+5. `Itinerary.jsx` renders the approved data as stateful day sections and stops. Users can expand days, reorder stops, and remove stops without calling the model again.
+
+This keeps the model boundary separate from UI rendering. The browser never calls the LLM directly, and the product remains a planning tool rather than a chatbot.
+
+### Failure handling
+
+| Scenario | Behavior |
+| --- | --- |
+| Malformed JSON | Validation rejects it and shows a retryable error. |
+| Wrong JSON shape | Missing fields or invalid arrays never reach the itinerary UI. |
+| Empty model response | The server returns a visible failure state. |
+| Slow local model | A loading state is shown; the backend aborts after 60 seconds. |
+| Failed local service | The interface explains that Ollama is unavailable and offers retry. |
+| Stale response | A request ID guard prevents an older result overwriting a newer request. |
+
+### Key files
+
+- `src/App.jsx`: request lifecycle and stale-response protection.
+- `src/lib/api.js`: client-to-backend boundary.
+- `src/lib/validateResult.js`: parsing and structural validation.
+- `server/index.js`: local Ollama integration and timeout handling.
+- `src/components/Itinerary.jsx`: interactive itinerary controls.
 
 ## AI usage note
 
@@ -34,3 +64,7 @@ Itineraries are not saved between browser sessions, and the app does not indepen
 ## Time spent
 
 Approximately 7 hours, including requirements review, design, implementation, testing, and documentation.
+
+## Demo walkthrough
+
+For a short demo, describe a two-day trip, generate the itinerary, expand a day, reorder a stop, remove a stop, then explain that the data is generated as JSON by Ollama and validated before React renders it. Mention the loading, error, timeout, and stale-response paths while showing the interface.

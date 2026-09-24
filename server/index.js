@@ -37,8 +37,6 @@ app.post('/api/generate', async (req, res) => {
     if (!response.ok) return res.status(502).json({ error: body?.error || 'The local AI service could not complete that request.' });
     const raw = body?.message?.content;
     if (typeof raw !== 'string' || !raw.trim()) return res.status(502).json({ error: 'The AI returned an empty response. Please try again.' });
-    // Some providers wrap otherwise-valid JSON in a Markdown fence despite the prompt.
-    // Remove only that outer wrapper; malformed or wrong-shaped JSON is still rejected in the browser.
     const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     res.json({ raw: cleaned });
   } catch (error) {
