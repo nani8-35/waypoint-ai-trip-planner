@@ -9,8 +9,8 @@ The backend requests JSON with a trip title, summary, days, and fully structured
 ## Run locally
 
 1. Install dependencies: `npm install`
-2. For local use, install [Ollama](https://ollama.com/) and pull the model: `ollama pull llama3.1:8b`.
-3. Copy `.env.example` to `.env`. For a deployed backend, set `AI_PROVIDER=openai`, `OPENAI_API_KEY`, and an OpenAI model instead.
+2. Copy `.env.example` to `.env` and add `OPENAI_API_KEY`.
+3. Keep the key server-side only; never use a `VITE_` prefixed key.
 4. Start the API and frontend together: `npm start`
 5. Open the local Vite address displayed in the terminal.
 
@@ -21,13 +21,13 @@ The backend requests JSON with a trip title, summary, days, and fully structured
 The app uses a two-process architecture:
 
 ```text
-React interface → Express API → Ollama or OpenAI
+React interface → Express API → OpenAI Structured Outputs
        ↑               ↓
 interactive UI ← validated JSON itinerary
 ```
 
 1. The browser submits only the free-form trip request to `src/lib/api.js`.
-2. `server/index.js` passes the request to local Ollama or OpenAI, with a strict JSON-only prompt and a 60-second timeout.
+2. `server/index.js` passes the request to OpenAI with a strict JSON Schema and a 60-second timeout.
 3. The client receives the raw model text but does not render it directly.
 4. `src/lib/validateResult.js` parses and validates every required field before the React state changes.
 5. `Itinerary.jsx` renders the approved data as stateful day sections and stops. Users can expand days, reorder stops, and remove stops without calling the model again.
@@ -44,7 +44,7 @@ This keeps the model boundary separate from UI rendering. The browser never call
 | Wrong JSON shape | Missing fields or invalid arrays never reach the itinerary UI. |
 | Empty model response | The server returns a visible failure state. |
 | Slow local model | A loading state is shown; the backend aborts after 60 seconds. |
-| Failed local service | The interface explains that Ollama is unavailable and offers retry. |
+| Failed request | The interface explains the OpenAI failure and offers retry. |
 | Stale response | A request ID guard prevents an older result overwriting a newer request. |
 | Cancelled request | The browser aborts the request and preserves the most recent completed plan. |
 | Offline browser | New generation is disabled with a clear status message; saved plans remain available. |
@@ -56,7 +56,7 @@ This keeps the model boundary separate from UI rendering. The browser never call
 - `src/App.jsx`: request lifecycle and stale-response protection.
 - `src/lib/api.js`: client-to-backend boundary.
 - `src/lib/validateResult.js`: parsing and structural validation.
-- `server/index.js`: OpenAI/Ollama integration and timeout handling.
+- `server/index.js`: OpenAI integration and timeout handling.
 - `src/components/Itinerary.jsx`: interactive itinerary controls.
 
 ## AI usage note
