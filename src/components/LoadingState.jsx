@@ -1,1 +1,1 @@
-export default function LoadingState() { return <section className="status loading" aria-live="polite"><span className="spinner" /><div><strong>Designing your route</strong><p>Finding a thoughtful rhythm for each day…</p></div></section>; }
+export default function LoadingState({ onCancel }) { return <section className="status loading" aria-live="polite"><span className="spinner" /><div><strong>Designing your route</strong><p>Finding a thoughtful rhythm for each day…</p><button className="text-button secondary" onClick={onCancel}>Cancel request</button></div></section>; }

@@ -4,6 +4,7 @@ import express from 'express';
 const app = express();
 const port = process.env.PORT || 3001;
 app.use(express.json({ limit: '32kb' }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 const itineraryShape = `{
   "title": "short trip title",
@@ -37,6 +38,7 @@ app.post('/api/generate', async (req, res) => {
     if (!response.ok) return res.status(502).json({ error: body?.error || 'The local AI service could not complete that request.' });
     const raw = body?.message?.content;
     if (typeof raw !== 'string' || !raw.trim()) return res.status(502).json({ error: 'The AI returned an empty response. Please try again.' });
+    if (raw.length > 50000) return res.status(502).json({ error: 'The AI response was unexpectedly large. Please try again with a shorter request.' });
     const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     res.json({ raw: cleaned });
   } catch (error) {

@@ -32,6 +32,8 @@ interactive UI ← validated JSON itinerary
 4. `src/lib/validateResult.js` parses and validates every required field before the React state changes.
 5. `Itinerary.jsx` renders the approved data as stateful day sections and stops. Users can expand days, reorder stops, and remove stops without calling the model again.
 
+The app also saves the five most recent itineraries in browser storage and can export any itinerary as JSON. These work without generating another model response.
+
 This keeps the model boundary separate from UI rendering. The browser never calls the LLM directly, and the product remains a planning tool rather than a chatbot.
 
 ### Failure handling
@@ -44,6 +46,10 @@ This keeps the model boundary separate from UI rendering. The browser never call
 | Slow local model | A loading state is shown; the backend aborts after 60 seconds. |
 | Failed local service | The interface explains that Ollama is unavailable and offers retry. |
 | Stale response | A request ID guard prevents an older result overwriting a newer request. |
+| Cancelled request | The browser aborts the request and preserves the most recent completed plan. |
+| Offline browser | New generation is disabled with a clear status message; saved plans remain available. |
+| Oversized output | The backend caps raw output; the client caps days, stops, and text field sizes. |
+| Duplicate itinerary days | Structural validation rejects duplicate day identifiers. |
 
 ### Key files
 
