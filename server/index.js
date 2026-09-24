@@ -19,30 +19,30 @@ app.post('/api/generate', async (req, res) => {
   const input = typeof req.body?.input === 'string' ? req.body.input.trim() : '';
   if (!input) return res.status(400).json({ error: 'Please describe the trip you want to take.' });
   if (input.length > 5000) return res.status(400).json({ error: 'Keep your trip request under 5,000 characters.' });
-  if (!process.env.LLM_API_KEY) return res.status(503).json({ error: 'The AI service is not configured yet. Add LLM_API_KEY to your .env file.' });
-
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000);
+  const timer = setTimeout(() => controller.abort(), 60000);
   try {
-    const response = await fetch(`${(process.env.LLM_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, '')}/chat/completions`, {
+    const response = await fetch(`${(process.env.OLLAMA_HOST || 'http://127.0.0.1:11434').replace(/\/$/, '')}/api/chat`, {
       method: 'POST', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.LLM_API_KEY}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.LLM_MODEL || 'openrouter/free',
-        temperature: 0.55,
-        messages: [{ role: 'system', content: `You are a careful travel planner. Return ONLY valid JSON, without markdown fences or prose. Match this exact shape: ${itineraryShape}. Make 2-5 days and 3-6 practical stops per day. Every field must be a non-empty string except day, which must be a positive integer.` }, { role: 'user', content: input }]
+        model: process.env.OLLAMA_MODEL || 'llama3.1:8b',
+        stream: false,
+        format: 'json',
+        options: { temperature: 0.35 },
+        messages: [{ role: 'system', content: `You are a careful travel planner. Return ONLY valid JSON matching this exact shape: ${itineraryShape}. Make 2-5 days and 3-6 practical stops per day. Every field must be a non-empty string except day, which must be a positive integer.` }, { role: 'user', content: input }]
       })
     });
     const body = await response.json().catch(() => null);
-    if (!response.ok) return res.status(502).json({ error: body?.error?.message || 'The AI service could not complete that request.' });
-    const raw = body?.choices?.[0]?.message?.content;
+    if (!response.ok) return res.status(502).json({ error: body?.error || 'The local AI service could not complete that request.' });
+    const raw = body?.message?.content;
     if (typeof raw !== 'string' || !raw.trim()) return res.status(502).json({ error: 'The AI returned an empty response. Please try again.' });
     // Some providers wrap otherwise-valid JSON in a Markdown fence despite the prompt.
     // Remove only that outer wrapper; malformed or wrong-shaped JSON is still rejected in the browser.
     const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     res.json({ raw: cleaned });
   } catch (error) {
-    const message = error.name === 'AbortError' ? 'The request took too long. Please try again.' : 'Could not reach the AI service. Check your connection and try again.';
+    const message = error.name === 'AbortError' ? 'The local model took too long. Please try again.' : 'Could not reach Ollama. Start it locally and try again.';
     res.status(502).json({ error: message });
   } finally { clearTimeout(timer); }
 });

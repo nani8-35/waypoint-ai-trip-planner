@@ -9,8 +9,8 @@ The backend requests JSON with a trip title, summary, days, and fully structured
 ## Run locally
 
 1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env`.
-3. Add an OpenAI-compatible provider key to `LLM_API_KEY`. Optionally update `LLM_BASE_URL` and `LLM_MODEL`.
+2. Install [Ollama](https://ollama.com/) and pull the local model: `ollama pull llama3.1:8b`.
+3. Copy `.env.example` to `.env` if you want to change the host or model.
 4. Start the API and frontend together: `npm start`
 5. Open the local Vite address displayed in the terminal.
 
@@ -18,8 +18,8 @@ The backend requests JSON with a trip title, summary, days, and fully structured
 
 ## Architecture
 
-- `src/lib/api.js` is the browser's only API boundary; no LLM key is shipped to the client.
-- `server/index.js` owns the key, prompts the provider for JSON only, and times out slow upstream calls.
+- `src/lib/api.js` is the browser's only API boundary; it never communicates with a model directly.
+- `server/index.js` calls Ollama only on the local machine, requests JSON, and times out slow model calls.
 - `src/lib/validateResult.js` structurally validates the model response before rendering.
 - A request-id guard prevents older, slower responses from replacing newer plans.
 
