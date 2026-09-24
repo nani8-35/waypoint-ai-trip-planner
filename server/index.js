@@ -6,7 +6,7 @@ const port = process.env.PORT || 3001;
 app.use(express.json({ limit: '32kb' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
-const systemPrompt = 'You are a careful travel planner. Return ONLY valid JSON. Make 2-5 days and 3-6 practical stops per day. Every field must be a non-empty string except day, which must be a positive integer.';
+const systemPrompt = `You are a careful travel planner. Return ONLY one valid JSON object with no markdown or extra keys. Use this exact shape: {"title":"short trip title","summary":"one sentence summary","days":[{"day":1,"title":"area or theme","stops":[{"name":"place","description":"why go or what to do","time":"Morning","duration":"1.5 hours","tip":"practical tip"}]}]}. Make 2-5 days and 3-6 practical stops per day. Every listed field is required. Do not use a type field.`;
 const itinerarySchema = { type: 'object', additionalProperties: false, properties: { title: { type: 'string' }, summary: { type: 'string' }, days: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { day: { type: 'integer' }, title: { type: 'string' }, stops: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { name: { type: 'string' }, description: { type: 'string' }, time: { type: 'string' }, duration: { type: 'string' }, tip: { type: 'string' } }, required: ['name', 'description', 'time', 'duration', 'tip'] } } }, required: ['day', 'title', 'stops'] } } }, required: ['title', 'summary', 'days'] };
 
 app.post('/api/generate', async (req, res) => {
