@@ -1,0 +1,1 @@
+export default function ErrorState({ message, retry }) { return <section className="status error" role="alert"><div className="error-icon">!</div><div><strong>That plan didn’t land.</strong><p>{message}</p><button className="text-button" onClick={retry}>Try again</button></div></section>; }
