@@ -11,7 +11,7 @@ import CommunityNotes from './components/CommunityNotes';
 import SpatialShowcase from './components/SpatialShowcase';
 import PlanLibrary from './components/PlanLibrary';
 import RoutePage from './components/RoutePage';
-import coastHero from './assets/waypoint-coast-hero.png';
+import coastHero from './assets/waypoint-coastal-hero-v2.png';
 import { generateItinerary } from './lib/api';
 import { parseItinerary } from './lib/validateResult';
 
