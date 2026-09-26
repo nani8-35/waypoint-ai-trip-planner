@@ -64,3 +64,5 @@ body{background:radial-gradient(circle at 12% 8%,#e1f0ff 0,transparent 25%),radi
 html,body,.waypoint-app{background:#eef2f7!important}.intro-statement,.discoveries,.route-collections,.planner-area,.saved-zone,.plan-library,.community-notes,.quote-coda,.site-coda,footer{background:transparent!important}.intro-statement:after,.planner-area:before{display:none}.intro-statement{margin:0!important}
 
 .site-coda{border-top:0!important}.site-coda>.shell>div:not(:first-child){border-top-color:#ffffff8c}
+
+.intro-statement>span{max-width:390px;margin-left:52%;text-align:left}@media(max-width:700px){.intro-statement>span{margin-left:0;max-width:330px}}
