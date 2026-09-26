@@ -15,9 +15,15 @@ app.post('/api/generate', async (req, res) => {
   const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 60000);
   try {
     const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ systemInstruction: { parts: [{ text: prompt }] }, contents: [{ role: 'user', parts: [{ text: input }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.35 } }) });
-    const body = await response.json().catch(() => null);
-    if (!response.ok) return res.status(502).json({ error: body?.error?.message || 'Gemini could not complete that request.' });
+    let body; let response;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ systemInstruction: { parts: [{ text: prompt }] }, contents: [{ role: 'user', parts: [{ text: input }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.35 } }) });
+      body = await response.json().catch(() => null);
+      const retryable = response.status === 429 || response.status === 503 || /high demand|temporarily unavailable|rate limit/i.test(body?.error?.message || '');
+      if (response.ok || !retryable || attempt === 2) break;
+      await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
+    }
+    if (!response.ok) { const message = body?.error?.message || 'Gemini could not complete that request.'; const retryable = response.status === 429 || response.status === 503 || /high demand|temporarily unavailable|rate limit/i.test(message); return res.status(502).json({ error: retryable ? 'Waypoint retried automatically, but the model is temporarily busy. Please try again in a moment.' : message }); }
     const raw = body?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (typeof raw !== 'string' || !raw.trim()) return res.status(502).json({ error: 'Gemini returned an empty response. Please try again.' });
     if (raw.length > 50000) return res.status(502).json({ error: 'The AI response was unexpectedly large. Please try again with a shorter request.' });
