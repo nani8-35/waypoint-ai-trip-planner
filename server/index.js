@@ -14,7 +14,7 @@ app.post('/api/generate', async (req, res) => {
   if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'Gemini is not configured. Add GEMINI_API_KEY to the server environment.' });
   const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 60000);
   try {
-    const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
     let body; let response;
     for (let attempt = 0; attempt < 3; attempt += 1) {
       response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ systemInstruction: { parts: [{ text: prompt }] }, contents: [{ role: 'user', parts: [{ text: input }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.35 } }) });
