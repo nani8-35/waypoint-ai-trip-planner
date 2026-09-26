@@ -66,3 +66,5 @@ html,body,.waypoint-app{background:#eef2f7!important}.intro-statement,.discoveri
 .site-coda{border-top:0!important}.site-coda>.shell>div:not(:first-child){border-top-color:#ffffff8c}
 
 .intro-statement>span{max-width:390px;margin-left:52%;text-align:left}@media(max-width:700px){.intro-statement>span{margin-left:0;max-width:330px}}
+
+.intro-statement>p,.intro-statement>h2,.intro-statement>span{display:block;max-width:760px;margin-left:auto;text-align:right}.intro-statement>span{max-width:390px;margin-top:28px}@media(max-width:700px){.intro-statement>p,.intro-statement>h2,.intro-statement>span{margin-left:0;text-align:left}.intro-statement>span{margin-top:22px}}
