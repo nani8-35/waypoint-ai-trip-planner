@@ -5,5 +5,5 @@ const collections = [
 ];
 
 export default function RouteCollections({ onSelect }) {
-  return <section className="route-collections shell"><div className="collections-heading"><p className="eyebrow">Start somewhere good</p><h2>Routes with a point<br />of view.</h2></div><div>{collections.map((collection) => <article key={collection.number}><span>{collection.number}</span><h3>{collection.title}</h3><p>{collection.copy}</p><button onClick={() => onSelect(collection.brief)}>Use this route idea <b>→</b></button></article>)}</div></section>;
+  return <section className="route-collections shell"><div className="collections-heading"><p className="eyebrow">Start somewhere good</p><h2>Routes with a point<br /><span className="tone-muted">of view.</span></h2></div><div>{collections.map((collection) => <article key={collection.number}><span>{collection.number}</span><h3>{collection.title}</h3><p>{collection.copy}</p><button onClick={() => onSelect(collection.brief)}>Use this route idea <b>→</b></button></article>)}</div></section>;
 }
