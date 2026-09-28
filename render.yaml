@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: waypoint-ai-trip-planner
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run serve
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: GEMINI_API_KEY
+        sync: false

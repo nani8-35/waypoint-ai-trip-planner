@@ -30,4 +30,8 @@ app.post('/api/generate', async (req, res) => {
     res.json({ raw });
   } catch (error) { res.status(502).json({ error: error.name === 'AbortError' ? 'The request took too long. Please try again.' : 'Could not reach Gemini. Check your connection and try again.' }); } finally { clearTimeout(timer); }
 });
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('dist'));
+  app.get('*', (_req, res) => res.sendFile('index.html', { root: 'dist' }));
+}
 app.listen(port, () => console.log(`Waypoint API listening on http://localhost:${port}`));
